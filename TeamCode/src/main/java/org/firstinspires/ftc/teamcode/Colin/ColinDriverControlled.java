@@ -52,10 +52,13 @@ public class ColinDriverControlled extends OpMode {
     @Override
     public void start() {
 
-        robot.motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //...ZeroPowerBehavior.FLOAT
-        robot.motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor4.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.m1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //...ZeroPowerBehavior.FLOAT
+        robot.m2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.m3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.m4.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.m5.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.m6.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
 
     }
 
@@ -91,44 +94,44 @@ public class ColinDriverControlled extends OpMode {
         }
 
         //mecanum drive
-        robot.motor1.setPower(((G1leftStickY) + (G1leftStickX) - (G1rightStickX)) * MultiplierFunction(driveStartTime) );
-        robot.motor3.setPower(((G1leftStickY) - (G1leftStickX) - (G1rightStickX)) * MultiplierFunction(driveStartTime) );
-        robot.motor2.setPower(((G1leftStickY) - (G1leftStickX) + (G1rightStickX)) * MultiplierFunction(driveStartTime));
-        robot.motor4.setPower(((G1leftStickY) + (G1leftStickX) + (G1rightStickX)) * MultiplierFunction(driveStartTime));
+        robot.m1.setPower(((G1leftStickY) + (G1leftStickX) - (G1rightStickX)) * MultiplierFunction(driveStartTime) );
+        robot.m3.setPower(((G1leftStickY) - (G1leftStickX) - (G1rightStickX)) * MultiplierFunction(driveStartTime) );
+        robot.m2.setPower(((G1leftStickY) - (G1leftStickX) + (G1rightStickX)) * MultiplierFunction(driveStartTime));
+        robot.m4.setPower(((G1leftStickY) + (G1leftStickX) + (G1rightStickX)) * MultiplierFunction(driveStartTime));
 
         //Carousel Wheel
         if (G1rightBumper == true) { //turn the wheel on
-            robot.motor5.setPower(0.3);
+            robot.m6.setPower(0.3);
         } else { //carousel Wheel off
-            robot.motor5.setPower(0);
+            robot.m6.setPower(0);
         }
 
         //Arm
         if (G1dpad_up) { //up
-            robot.motor6.setPower(-0.25);
+            robot.m5.setPower(-0.5);
         }
         else if (G1dpad_down) { //down
-            robot.motor6.setPower(0.25);
+            robot.m5.setPower(0.5);
         }
         else { //stop the arm
-            robot.motor6.setPower(0);
+            robot.m5.setPower(0);
         }
 
         //Plug servos into the expansion hub
         //Claw Wrist
         if (G1leftBumper) {
-            robot.servo1.setPosition(0.2);
+            robot.s1.setPosition(0.2);
         }
 
         if (G1LT>0) {
-            robot.servo1.setPosition(0.6);
+            robot.s1.setPosition(0.6);
         }
 
         //Claw pincher
         if (G1y) { //open
-            robot.servo2.setPosition(0.6);
+            robot.s2.setPosition(0.6);
         } else if (G1x) { //close
-            robot.servo2.setPosition(0.9);
+            robot.s2.setPosition(0.9);
         } else{
             stop();
         }
