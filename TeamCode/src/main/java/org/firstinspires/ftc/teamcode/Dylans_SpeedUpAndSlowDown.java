@@ -21,8 +21,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
  * My Custom Autonomous Opmode
  */
 //@Disabled
-@Autonomous(name = "mechbot auto demo my version", group = "Mechanum")
-public class MechBotAutoDemo_MyVersion extends LinearOpMode {
+@Autonomous(name = "Dylan's Speed Up and Slow Down", group = "Testing")
+public class Dylans_SpeedUpAndSlowDown extends LinearOpMode {
 
     double power=0.6;
     private ElapsedTime     runtime = new ElapsedTime();

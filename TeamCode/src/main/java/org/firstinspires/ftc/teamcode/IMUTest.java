@@ -19,8 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name="IMU Test 2", group="Exercises")
-public class IMUTest2 extends LinearOpMode
+@Autonomous(name="IMU Test", group="Testing")
+public class IMUTest extends LinearOpMode
 {
     //Calls the RobotHardware class
     ColinRobotHardware robot = new ColinRobotHardware();
