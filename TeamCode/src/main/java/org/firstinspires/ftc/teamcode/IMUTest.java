@@ -9,10 +9,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+//IMU... Things
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
 import java.util.concurrent.Executors;
@@ -26,21 +28,23 @@ public class IMUTest extends LinearOpMode
     ColinRobotHardware robot = new ColinRobotHardware();
     private ElapsedTime runtime = new ElapsedTime();
 
+    // to configure the IMU:
+    // in the configurations for the robot select the control hub, and go into the configuration for the IMU which should be in I2CBus0
+    //configured to be a sensor of type "AdaFruit IMU", and named "imu".
+
+
     BNO055IMU             imu;
     Orientation           lastAngles = new Orientation();
     double                globalAngle, power = .60, correction, rotation;
-    double newPower;
-/*  double targetPower = power; //power, as defined earlier in the code, will now be named targetPower
-    double currentPower;*/
 
     //Declares some methods to compress and reduce tediousness of writing repetitive code.
     //Every time the method DriveForward() is called,  it will do the instructions within the method
     public void DriveForward()
     {
-        robot.m1.setPower(newPower + correction); //sets the motors power
-        robot.m2.setPower(newPower - correction);
-        robot.m3.setPower(newPower + correction);
-        robot.m4.setPower(newPower - correction);
+        robot.m1.setPower(power + correction); //sets the motors power
+        robot.m2.setPower(power - correction);
+        robot.m3.setPower(power + correction);
+        robot.m4.setPower(power - correction);
     }
     //Same as DriveForward() but in reverse
     public void DriveBackward()
@@ -87,26 +91,6 @@ public class IMUTest extends LinearOpMode
         robot.m4.setPower(0);
     }
 
-    /*public void CalculatePower()
-    {
-        if (targetPower > currentPower) {
-            newPower = currentPower + .5*Math.pow(runtime.seconds(),2); //The main equation: adds a power-curve to whatever the current power was
-        }
-        else if (targetPower < currentPower) {
-            newPower = currentPower + -.5*Math.pow(runtime.seconds(),2); //The main equation: adds a power-curve to whatever the current power was
-        }
-        else {
-            newPower = targetPower;
-        }
-
-        if (newPower > targetPower && targetPower > currentPower) {
-            newPower = targetPower; //caps the power added by the graph to the power we set
-        }
-
-        if (newPower < targetPower && targetPower < currentPower) {
-            newPower = targetPower; //caps the power added by the graph to the power we set
-        }
-    }*/
 
     //This is what happens when the init button is pushed.
     @Override
@@ -123,12 +107,9 @@ public class IMUTest extends LinearOpMode
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled      = true;
 
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
 
-        imu.initialize(parameters);
+
+        robot.imu.initialize(parameters);
 
         //Gives info about what the IMU is doing on the phone
         telemetry.addData("Mode", "calibrating...");
@@ -156,7 +137,7 @@ public class IMUTest extends LinearOpMode
         sleep(1000);
 
 
-        //captures System.currentTimeMillis and saves it as startTime. Subtract the later time from this time to get the change in time.
+        //captures System.currentTimeMillis() and saves it as startTime. Subtract the later time from this time to get the change in time.
         boolean started = false;
         long startTime = 0;
         long elapsedTime;
@@ -286,13 +267,11 @@ public class IMUTest extends LinearOpMode
 
         if (degrees < 0) {
             // On right turn we have to get off zero first.
-            while (opModeIsActive() && getAngle() == 0) {
+            while (opModeIsActive() && (getAngle() == 0 || getAngle()>degrees)) {
                 TurnRight();
             }
 
-            while (opModeIsActive() && getAngle() > degrees) {
-                TurnRight();
-            }
+            //If the robot overshoots, then go back
             while (opModeIsActive() && getAngle() < degrees) {
                 TurnLeft();
             }
@@ -301,25 +280,12 @@ public class IMUTest extends LinearOpMode
             while (opModeIsActive() && getAngle() < degrees) {
                 TurnLeft();
             }
+
+            //If the robot overshoots, then go back
             while (opModeIsActive() && getAngle() > degrees) {
                 TurnRight();
             }
         }
-        /*if (getAngle() == degrees) {
-            resetAngle();
-            while(opModeIsActive() && degrees > 0) {
-                robot.m1.setPower(0 - 5*correction);
-                robot.m2.setPower(0 - 5*correction);
-                robot.m3.setPower(0 - 5*correction);
-                robot.m4.setPower(0 - 5*correction);
-            }
-            while(opModeIsActive() && degrees < 0) {
-                robot.m1.setPower(0 + 5*correction);
-                robot.m2.setPower(0 + 5*correction);
-                robot.m3.setPower(0 + 5*correction);
-                robot.m4.setPower(0 + 5*correction);
-            }
-        }*/
 
     // turn the motors off.
     StopDriving();
