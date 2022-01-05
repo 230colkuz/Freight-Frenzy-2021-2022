@@ -25,7 +25,6 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
     BNO055IMU             imu;
     Orientation           lastAngles = new Orientation();
     double                globalAngle, lastTargetAngle, power = .60, correction, rotation;
-    double newPower;
 
     //Declares some methods to compress and reduce tediousness of writing repetitive code.
 
@@ -178,11 +177,11 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
 
             //Once the power has increased to the regular power, leave the power at that level
             if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
-                r.m1.setPower(power);
-                r.m2.setPower(-power);
-                r.m3.setPower(-power);
-                r.m4.setPower(power);
 
+                r.m1.setPower(-power + correction);
+                r.m2.setPower(-power - correction);
+                r.m3.setPower(-power + correction);
+                r.m4.setPower(-power - correction);
             }
         }
 
@@ -231,6 +230,9 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
             r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
 
             GetTelemetry();
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
 
             //Once the power has increased to the regular power, leave the power at that level
             if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
@@ -241,6 +243,11 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
 
             }
         }
+
+        //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
+        telemetry.addData("Mode", "waiting for start");
+        telemetry.addData("imu calibration status", r.imu.getCalibrationStatus().toString());
+        telemetry.update();
 
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {

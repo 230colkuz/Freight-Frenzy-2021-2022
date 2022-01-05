@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="ColinAutonTest", group="Test")
 
-public class ColinAutonBasic extends LinearOpMode {
+public class ColinAutonTest extends LinearOpMode {
 
     //Calls the RobotHardware class
     ColinRobotHardware r = new ColinRobotHardware(); //r for robot
