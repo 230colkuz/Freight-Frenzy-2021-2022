@@ -24,7 +24,7 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
 
     BNO055IMU             imu;
     Orientation           lastAngles = new Orientation();
-    double                globalAngle, lastHeading, power = .60, correction, rotation;
+    double                globalAngle, lastTargetAngle, power = .60, correction, rotation;
     double newPower;
 
     //Declares some methods to compress and reduce tediousness of writing repetitive code.
@@ -50,18 +50,18 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
     //Acceleration Methods
     public void AccelerateForward(double travelTime) {
 
-
-        if (opModeIsActive()) ;
         //Resets the run time once the method has been called on
         runtime.reset();
 
         //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
 
-            r.m1.setPower(power * (1.5 * runtime.seconds()));
-            r.m2.setPower(power * (1.5 * runtime.seconds()));
-            r.m3.setPower(power * (1.5 * runtime.seconds()));
-            r.m4.setPower(power * (1.5 * runtime.seconds()));
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(power * (1.5 * runtime.seconds()) + correction);
+            r.m2.setPower(power * (1.5 * runtime.seconds()) - correction);
+            r.m3.setPower(power * (1.5 * runtime.seconds()) + correction);
+            r.m4.setPower(power * (1.5 * runtime.seconds()) - correction);
 
             GetTelemetry();
 
@@ -78,10 +78,12 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
 
-            r.m1.setPower(power*(travelTime - runtime.seconds()));
-            r.m2.setPower(power*(travelTime - runtime.seconds()));
-            r.m3.setPower(power*(travelTime - runtime.seconds()));
-            r.m4.setPower(power*(travelTime - runtime.seconds()));
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(power*(travelTime - runtime.seconds()) + correction);
+            r.m2.setPower(power*(travelTime - runtime.seconds()) - correction);
+            r.m3.setPower(power*(travelTime - runtime.seconds()) + correction);
+            r.m4.setPower(power*(travelTime - runtime.seconds()) - correction);
 
             GetTelemetry();
         }
@@ -89,10 +91,11 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         //When We're not traveling for a long time, just set the motors to a low power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 1.5)) {
 
-            r.m1.setPower(0.2);
-            r.m2.setPower(0.2);
-            r.m3.setPower(0.2);
-            r.m4.setPower(0.2);
+            correction = checkDirection();
+            r.m1.setPower(0.2 + correction);
+            r.m2.setPower(0.2 - correction);
+            r.m3.setPower(0.2 + correction);
+            r.m4.setPower(0.2 - correction);
 
             GetTelemetry();
 
@@ -101,31 +104,31 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         sleep(250);
     }
 
+
     public void AccelerateBackwards(double travelTime) {
 
-        if (opModeIsActive()) ;
         //Resets the run time once the method has been called on
         runtime.reset();
 
         //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
-        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
-            //correction value is constantly updated in this while loop
-            correction = checkDirection();
-            r.m1.setPower(-power * (1.5 * runtime.seconds()) + correction);
-            r.m2.setPower(-power * (1.5 * runtime.seconds()) - correction);
-            r.m3.setPower(-power * (1.5 * runtime.seconds()) + correction);
-            r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
+            while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
+                //correction value is constantly updated in this while loop
+                correction = checkDirection();
+                r.m1.setPower(-power * (1.5 * runtime.seconds()) + correction);
+                r.m2.setPower(-power * (1.5 * runtime.seconds()) - correction);
+                r.m3.setPower(-power * (1.5 * runtime.seconds()) + correction);
+                r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
 
-            GetTelemetry();
+                GetTelemetry();
 
-            //Once the power has increased to/reached to the regular power, cap the power at that level
-            if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
-                r.m1.setPower(-power);
-                r.m2.setPower(-power);
-                r.m3.setPower(-power);
-                r.m4.setPower(-power);
+                //Once the power has increased to/reached to the regular power, cap the power at that level
+                if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
+                    r.m1.setPower(-power);
+                    r.m2.setPower(-power);
+                    r.m3.setPower(-power);
+                    r.m4.setPower(-power);
+                }
             }
-        }
 
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
@@ -156,52 +159,116 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         sleep (250);
     }
 
-    //This is what happens when the init button is pushed.
-    @Override
-    public void runOpMode() throws InterruptedException {
-        // Initializes hardware when init is pressed on the phone
-        r.init(hardwareMap);
+    public void AccelerateStrafeRight(double travelTime) {
 
-        //Makes new methods for naming simplification purposes
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        //Resets the run time once the method has been called on
+        runtime.reset();
 
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = true;
+        //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
 
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(power * (1.5 * runtime.seconds()) + correction);
+            r.m2.setPower(-power * (1.5 * runtime.seconds()) - correction);
+            r.m3.setPower(-power * (1.5 * runtime.seconds()) + correction);
+            r.m4.setPower(power * (1.5 * runtime.seconds()) - correction);
 
-        imu.initialize(parameters);
+            GetTelemetry();
 
-        //Gives info about what the IMU is doing on the phone
-        telemetry.addData("Mode", "calibrating...");
-        telemetry.update();
+            //Once the power has increased to the regular power, leave the power at that level
+            if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
+                r.m1.setPower(power);
+                r.m2.setPower(-power);
+                r.m3.setPower(-power);
+                r.m4.setPower(power);
 
-        // When the stop button isn't pushed and the gyro (IMU) isn't calibrated, wait (! means not). This is a loop.
-        while (!isStopRequested() && !r.imu.isGyroCalibrated()) {
-            //do nothing for 50 milliseconds
-            sleep(50);
-            //idle(); allows the program to perform other necessary tasks in between iterations of the loop.
-            idle();
+            }
         }
-        //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
-        telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", r.imu.getCalibrationStatus().toString());
-        telemetry.update();
 
-        // The program will wait for the start button to continue.
-        waitForStart();
+        //DECELERATE
+        while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
 
-            //last heading (the last direction we rotated to) will update after every turn, but since we haven't turned at start, default to 0 degrees
-            lastHeading=0;
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(power*(travelTime - runtime.seconds()) + correction);
+            r.m2.setPower(-power*(travelTime - runtime.seconds()) - correction);
+            r.m3.setPower(-power*(travelTime - runtime.seconds()) + correction);
+            r.m4.setPower(power*(travelTime - runtime.seconds()) - correction);
 
-            AccelerateBackwards(2);
-            rotate(-90, 5);
-            AccelerateBackwards(1.3);
+            GetTelemetry();
+        }
+
+        //When We're not traveling for a long time, just set the motors to a low power
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 1.5)) {
+
+            correction = checkDirection();
+            r.m1.setPower(0.2 + correction);
+            r.m2.setPower(-0.2 - correction);
+            r.m3.setPower(-0.2 + correction);
+            r.m4.setPower(0.2 - correction);
+
+            GetTelemetry();
+
+        }
+        StopDriving();
+        sleep(250);
+    }
+
+    public void AccelerateStrafeLeft(double travelTime) {
+
+        //Resets the run time once the method has been called on
+        runtime.reset();
+
+        //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
+
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(-power * (1.5 * runtime.seconds()) + correction);
+            r.m2.setPower(power * (1.5 * runtime.seconds()) - correction);
+            r.m3.setPower(power * (1.5 * runtime.seconds()) + correction);
+            r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
+
+            GetTelemetry();
+
+            //Once the power has increased to the regular power, leave the power at that level
+            if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
+                r.m1.setPower(-power);
+                r.m2.setPower(power);
+                r.m3.setPower(power);
+                r.m4.setPower(-power);
+
+            }
+        }
+
+        //DECELERATE
+        while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
+
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(-power*(travelTime - runtime.seconds()) + correction);
+            r.m2.setPower(power*(travelTime - runtime.seconds()) - correction);
+            r.m3.setPower(power*(travelTime - runtime.seconds()) + correction);
+            r.m4.setPower(-power*(travelTime - runtime.seconds()) - correction);
+
+            GetTelemetry();
+        }
+
+        //When We're not traveling for a long time, just set the motors to a low power
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 1.5)) {
+
+            correction = checkDirection();
+            r.m1.setPower(-0.2 + correction);
+            r.m2.setPower(0.2 - correction);
+            r.m3.setPower(0.2 + correction);
+            r.m4.setPower(-0.2 - correction);
+
+            GetTelemetry();
+
+        }
+        StopDriving();
+        sleep(250);
     }
 
     // Resets the cumulative angle tracking to zero.
@@ -257,10 +324,10 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
 
         angle = getAngle();
 
-        if (angle == lastHeading)
+        if (angle == lastTargetAngle)
             correction = 0;             // no adjustment.
         else
-            correction = (lastHeading - angle);        // reverse sign of angle for correction.
+            correction = (lastTargetAngle - angle);        // reverse sign of angle for correction.
 
         correction = correction * gain;
 
@@ -271,88 +338,141 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
      * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
      * @param degrees Degrees to turn, + is left - is right
      */
-    private double rotate(int degrees, double travelTime)
-    {
+    private double rotate(int degrees, double travelTime) {
+
         if (opModeIsActive()) ;
-        //Resets the run time once the method has been called on
-        runtime.reset();
-        double minTurnPower = .133;
+            //Resets the run time once the method has been called on
+            runtime.reset();
+            double minTurnPower = .133;
 
-        while (opModeIsActive() && (runtime.seconds() < travelTime)) {
-            // getAngle() returns + when rotating counter clockwise (left) and - when rotating clockwise (right).
-            // rotate until turn is completed.
-            GetTelemetry();
-            if (degrees < 0) {
-                // On right turn we have to get off zero first.
-                while (opModeIsActive() && (getAngle() > degrees || getAngle() == 0)) {
-                    //do this as long as our power will be above the amount specified
+            while (opModeIsActive() && (runtime.seconds() < travelTime)) {
+                // getAngle() returns + when rotating counter clockwise (left) and - when rotating clockwise (right).
+                // rotate until turn is completed.
+                GetTelemetry();
+                if (degrees < 0) {
+                    // On right turn we have to get off zero first.
+                    while (opModeIsActive() && (getAngle() > degrees || getAngle() == 0)) {
+                        //do this as long as our power will be above the amount specified
                         //sets power as a relationship of the difference between our target angle and current angle
-                        r.m1.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m2.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m3.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m4.setPower(Math.abs(0.00555*(degrees-getAngle())));
+                        r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
 
-                    //else, keep it at this power so the robot has enough power to finish its rotation
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(-minTurnPower);
-                        r.m2.setPower(minTurnPower);
-                        r.m3.setPower(-minTurnPower);
-                        r.m4.setPower(minTurnPower);
+                        //else, keep it at this power so the robot has enough power to finish its rotation
+                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                            r.m1.setPower(-minTurnPower);
+                            r.m2.setPower(minTurnPower);
+                            r.m3.setPower(-minTurnPower);
+                            r.m4.setPower(minTurnPower);
+                        }
                     }
-                }
-                while (opModeIsActive() && getAngle() < degrees) {
-                        r.m1.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m2.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m3.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m4.setPower(-Math.abs(0.00555*(degrees-getAngle())));
+                    while (opModeIsActive() && getAngle() < degrees) {
+                        r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
 
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(minTurnPower);
-                        r.m2.setPower(-minTurnPower);
-                        r.m3.setPower(minTurnPower);
-                        r.m4.setPower(-minTurnPower);
-                    }
-                }
-            }
-            else {   // left turn.
-                while (opModeIsActive() && getAngle() < degrees) {
-                        r.m1.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m2.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m3.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m4.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
                             r.m1.setPower(minTurnPower);
                             r.m2.setPower(-minTurnPower);
                             r.m3.setPower(minTurnPower);
                             r.m4.setPower(-minTurnPower);
+                        }
                     }
                 }
-                while (opModeIsActive() && getAngle() > degrees) {
+                else {   // left turn.
+                    while (opModeIsActive() && getAngle() < degrees) {
+                        r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
 
-                        r.m1.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m2.setPower(Math.abs(0.00555*(degrees-getAngle())));
-                        r.m3.setPower(-Math.abs(0.00555*(degrees-getAngle())));
-                        r.m4.setPower(Math.abs(0.00555*(degrees-getAngle())));
+                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                            r.m1.setPower(minTurnPower);
+                            r.m2.setPower(-minTurnPower);
+                            r.m3.setPower(minTurnPower);
+                            r.m4.setPower(-minTurnPower);
+                        }
+                    }
+                    while (opModeIsActive() && getAngle() > degrees) {
 
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(-minTurnPower);
-                        r.m2.setPower(minTurnPower);
-                        r.m3.setPower(-minTurnPower);
-                        r.m4.setPower(minTurnPower);
+                        r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                        r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+
+                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                            r.m1.setPower(-minTurnPower);
+                            r.m2.setPower(minTurnPower);
+                            r.m3.setPower(-minTurnPower);
+                            r.m4.setPower(minTurnPower);
+                        }
                     }
                 }
+
+
+                rotation = getAngle();
+
+                // wait for rotation to stop.
+                sleep(100);
             }
-
-            rotation = getAngle();
-
-            // wait for rotation to stop.
-            sleep(100);
-        }
-        // turn the motors off.
-        StopDriving();
-        sleep(250);
-        lastHeading = degrees;
-        return degrees;
+            // turn the motors off.
+            StopDriving();
+            sleep(250);
+            lastTargetAngle = degrees;
+            return degrees;
     }
+
+    //This is what happens when the init button is pushed.
+    @Override
+    public void runOpMode() throws InterruptedException {
+        // Initializes hardware when init is pressed on the phone
+        r.init(hardwareMap);
+
+        //Makes new methods for naming simplification purposes
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = true;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        //Gives info about what the IMU is doing on the phone
+        telemetry.addData("Mode", "calibrating...");
+        telemetry.update();
+
+        // When the stop button isn't pushed and the gyro (IMU) isn't calibrated, wait (! means not). This is a loop.
+        while (!isStopRequested() && !r.imu.isGyroCalibrated()) {
+            //do nothing for 50 milliseconds
+            sleep(50);
+            //idle(); allows the program to perform other necessary tasks in between iterations of the loop.
+            idle();
+        }
+        //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
+        telemetry.addData("Mode", "waiting for start");
+        telemetry.addData("imu calib status", r.imu.getCalibrationStatus().toString());
+        telemetry.update();
+
+        // The program will wait for the start button to continue.
+        waitForStart();
+
+            //last heading (the last direction we rotated to) will update after every turn, but since we haven't turned at start, default to 0 degrees
+            lastTargetAngle=0;
+
+            AccelerateForward(1.6);
+            //rotate(-90, 5);
+            AccelerateBackwards(1.6);
+            AccelerateStrafeRight(1.6);
+            AccelerateStrafeLeft(1.6);
+    }
+
+
 }
