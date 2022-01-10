@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
 import org.firstinspires.ftc.teamcode.Dylans_SmoothSpeedAndIMUAuton;
-
+@Disabled
 public class Test_Seperatly_Located_Auton {
 
     //Calls the RobotHardware class
@@ -85,24 +85,20 @@ public class Test_Seperatly_Located_Auton {
      * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
      * @param degrees Degrees to turn, + is left - is right
      */
-    private double rotate(int degrees, double travelTime) {
+    private void rotate(int degrees, double travelTime) {
 
 
-    //Declares some methods to compress and reduce tediousness of writing repetitive code.
+        //Declares some methods to compress and reduce tediousness of writing repetitive code.
 
-    //Stops all 4 motors
-    public void A.StopDriving()
-    {
-        r.m1.setPower(0);
-        r.m2.setPower(0);
-        r.m3.setPower(0);
-        r.m4.setPower(0);
+        //Stops all 4 motors
+        //public void A.StopDriving()
+        {
+            r.m1.setPower(0);
+            r.m2.setPower(0);
+            r.m3.setPower(0);
+            r.m4.setPower(0);
+        }
+
+
     }
-
-
-
-
-
-
-
 }
