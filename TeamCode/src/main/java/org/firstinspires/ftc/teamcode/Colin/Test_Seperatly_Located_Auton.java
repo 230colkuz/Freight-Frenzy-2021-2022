@@ -13,13 +13,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
 import org.firstinspires.ftc.teamcode.Dylans_SmoothSpeedAndIMUAuton;
-@Disabled
-public class Test_Seperatly_Located_Auton {
+@Autonomous(name="SOME SORTA AUTON", group="Test")
+public class Test_Seperatly_Located_Auton extends LinearOpMode {
 
     //Calls the RobotHardware class
     ColinRobotHardware r = new ColinRobotHardware();
     private ElapsedTime runtime = new ElapsedTime();
-    Dylans_SmoothSpeedAndIMUAuton A = new Dylans_SmoothSpeedAndIMUAuton();
+    Autonomous_Instructions A = new Autonomous_Instructions();
 
     BNO055IMU             imu;
     Orientation           lastAngles = new Orientation();
@@ -98,7 +98,20 @@ public class Test_Seperatly_Located_Auton {
             r.m3.setPower(0);
             r.m4.setPower(0);
         }
+    }
+
+    @Override
+    public void runOpMode() {
+
+        r.init(hardwareMap);
+
+        waitForStart();
+
+        A.TurnRight(0.4,1000);
+        A.TurnLeft(0.4,1000);
 
 
     }
+
+
 }
