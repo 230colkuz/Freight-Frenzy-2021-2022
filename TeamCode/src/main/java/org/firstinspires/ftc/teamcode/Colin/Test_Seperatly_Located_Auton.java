@@ -83,22 +83,9 @@ public class Test_Seperatly_Located_Auton extends LinearOpMode {
 
     /**
      * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
-     * @param degrees Degrees to turn, + is left - is right
+     *  Degrees to turn, + is left - is right
      */
-    private void rotate(int degrees, double travelTime) {
 
-
-        //Declares some methods to compress and reduce tediousness of writing repetitive code.
-
-        //Stops all 4 motors
-        //public void A.StopDriving()
-        {
-            r.m1.setPower(0);
-            r.m2.setPower(0);
-            r.m3.setPower(0);
-            r.m4.setPower(0);
-        }
-    }
 
     @Override
     public void runOpMode() {

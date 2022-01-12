@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
+@Autonomous(name="The other one", group="Test")
 public class Autonomous_Instructions extends LinearOpMode {
 
     ColinRobotHardware r = new ColinRobotHardware();
@@ -467,7 +468,29 @@ public class Autonomous_Instructions extends LinearOpMode {
 
         r.init(hardwareMap);
 
+        //Makes new methods for naming simplification purposes
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = true;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
+        telemetry.addData("Mode", "waiting for start");
+        telemetry.addData("imu calib status", r.imu.getCalibrationStatus().toString());
+        telemetry.update();
+
         waitForStart();
+
+        DriveForward(3000);
 
         stop();
 
