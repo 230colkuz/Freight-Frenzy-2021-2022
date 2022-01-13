@@ -43,11 +43,6 @@ public class ColinDriverControlled extends OpMode {
         telemetry.addData("STATUS", "Initialized");
     }
 
-    //LOOP ON init()
-    @Override
-    public void init_loop() {
-    }
-
     //RUN ONCE ON start()
     @Override
     public void start() {
@@ -129,11 +124,9 @@ public class ColinDriverControlled extends OpMode {
 
         //Claw pincher
         if (G1y) { //open
-            robot.s2.setPosition(0.6);
+            robot.s2.setPosition(0);
         } else if (G1x) { //close
-            robot.s2.setPosition(0.9);
-        } else{
-            stop();
+            robot.s2.setPosition(0.6);
         }
 
             /*// shooter and intake servo statements
@@ -145,14 +138,9 @@ public class ColinDriverControlled extends OpMode {
 
 
 
-
     }
 
     // RUN ONCE ON stop()
-    @Override
-    public void stop() {
-    }
-
     // multiplier function
     private double MultiplierFunction(double driveStartTime) {
         double quadraticConstantA = (3 * Math.pow(10, -6));

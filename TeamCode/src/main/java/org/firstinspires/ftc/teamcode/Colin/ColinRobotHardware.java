@@ -59,8 +59,8 @@ public class ColinRobotHardware {
 
 
         //SET SERVO POSITION
-        s1.setPosition(0); //0 is claw open, 0.6 is claw closed
-        s2.setPosition(0);
+        s1.setPosition(0);
+        s2.setPosition(0); //0 is claw open, 0.6 is claw closed
 
         //SET MOTOR zeroPowerBehavior (Brake for the Wheels and Float for anything else
             m1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE); //...ZeroPowerBehavior.FLOAT
@@ -68,7 +68,7 @@ public class ColinRobotHardware {
             m3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
             m4.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        m5.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        m5.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         m6.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
 

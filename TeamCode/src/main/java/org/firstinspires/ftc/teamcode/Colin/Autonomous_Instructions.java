@@ -490,10 +490,5 @@ public class Autonomous_Instructions extends LinearOpMode {
 
         waitForStart();
 
-        DriveForward(3000);
-
-        stop();
-
-
     }
 }

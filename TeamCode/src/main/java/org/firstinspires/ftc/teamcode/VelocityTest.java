@@ -38,11 +38,11 @@ public class VelocityTest extends LinearOpMode {
 
         waitForStart();
 
-        r.s1.setPosition (.6);
+        r.s2.setPosition (.6);
         sleep(2000);
-        r.s1.setPosition (0);
+        r.s2.setPosition (0);
         sleep(2000);
-        r.s1.setPosition(0.6);
+        r.s2.setPosition(0.6);
         sleep(1000);
 
         /*r.m1.setPower(1);
