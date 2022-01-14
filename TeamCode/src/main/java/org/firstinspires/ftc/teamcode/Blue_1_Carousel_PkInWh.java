@@ -1,6 +1,3 @@
-// Simple autonomous program that uses an IMU to drive in a straight line.
-// Uses REV Hub's built in IMU in place of a gyro.
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -8,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -16,9 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
-@Autonomous(name="Dylan's Smooth Speed and IMU Auton", group="Testing")
-public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
-{
+@Autonomous(name="Red2(Park_in_warehouse)", group="Test")
+public class Blue_1_Carousel_PkInWh extends LinearOpMode {
+
     //Calls the RobotHardware class
     ColinRobotHardware r = new ColinRobotHardware();
     private ElapsedTime runtime = new ElapsedTime();
@@ -29,14 +27,6 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
 
     //Declares some methods to compress and reduce tediousness of writing repetitive code.
 
-    //Stops all 4 motors
-    public void StopDriving()
-    {
-        r.m1.setPower(0);
-        r.m2.setPower(0);
-        r.m3.setPower(0);
-        r.m4.setPower(0);
-    }
     public void GetTelemetry()
     {
         telemetry.addData("1 imu heading", lastAngles.firstAngle);
@@ -47,13 +37,54 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         telemetry.update();
     }
 
+    //Basic Methods
+    public void StopDriving(){
+        r.m1.setPower(0);
+        r.m2.setPower(0);
+        r.m3.setPower(0);
+        r.m4.setPower(0);
+        sleep(250);
+    }
+    public void DriveForward(long time, double otherPower) {
+        r.m1.setPower(otherPower);
+        r.m2.setPower(otherPower);
+        r.m3.setPower(otherPower);
+        r.m4.setPower(otherPower);
+        sleep(time);
+        StopDriving();
+    }
+    public void DriveBackwards(long time, double otherPower) {
+        r.m1.setPower(-otherPower);
+        r.m2.setPower(-otherPower);
+        r.m3.setPower(-otherPower);
+        r.m4.setPower(-otherPower);
+        sleep(time);
+        StopDriving();
+    }
+    public void StrafeRight(long time, double otherPower){
+        r.m1.setPower(otherPower);
+        r.m2.setPower(-otherPower);
+        r.m3.setPower(-otherPower);
+        r.m4.setPower(otherPower);
+        sleep(time);
+        StopDriving();
+    }
+    public void StrafeLeft(long time, double otherPower){
+        r.m1.setPower(-otherPower);
+        r.m2.setPower(otherPower);
+        r.m3.setPower(otherPower);
+        r.m4.setPower(-otherPower);
+        sleep(time);
+        StopDriving();
+    }
+
     //Acceleration Methods
     public void AccelerateForward(double travelTime) {
 
         //Resets the run time once the method has been called on
         runtime.reset();
 
-        //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
+        //ACCELERATE  When going for more than 1.5 seconds & accelerate to desired power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
 
             //correction value is constantly updated in this while loop
@@ -76,7 +107,7 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         }
 
         //DECELERATE
-        while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
 
             //correction value is constantly updated in this while loop
             correction = checkDirection();
@@ -104,31 +135,30 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         sleep(250);
     }
 
-
     public void AccelerateBackwards(double travelTime) {
 
         //Resets the run time once the method has been called on
         runtime.reset();
 
         //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
-            while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
-                //correction value is constantly updated in this while loop
-                correction = checkDirection();
-                r.m1.setPower(-power * (1.5 * runtime.seconds()) + correction);
-                r.m2.setPower(-power * (1.5 * runtime.seconds()) - correction);
-                r.m3.setPower(-power * (1.5 * runtime.seconds()) + correction);
-                r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
+        while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) > 1)) {
+            //correction value is constantly updated in this while loop
+            correction = checkDirection();
+            r.m1.setPower(-power * (1.5 * runtime.seconds()) + correction);
+            r.m2.setPower(-power * (1.5 * runtime.seconds()) - correction);
+            r.m3.setPower(-power * (1.5 * runtime.seconds()) + correction);
+            r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
 
-                GetTelemetry();
+            GetTelemetry();
 
-                //Once the power has increased to/reached to the regular power, cap the power at that level
-                if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
-                    r.m1.setPower(-power);
-                    r.m2.setPower(-power);
-                    r.m3.setPower(-power);
-                    r.m4.setPower(-power);
-                }
+            //Once the power has increased to/reached to the regular power, cap the power at that level
+            if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
+                r.m1.setPower(-power);
+                r.m2.setPower(-power);
+                r.m3.setPower(-power);
+                r.m4.setPower(-power);
             }
+        }
 
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 1.5) && ((travelTime - runtime.seconds()) < 1)) {
@@ -231,9 +261,9 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
             r.m4.setPower(-power * (1.5 * runtime.seconds()) - correction);
 
             GetTelemetry();
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
+            // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+            // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+            // and named "imu".
 
             //Once the power has increased to the regular power, leave the power at that level
             if (Math.abs(power * 1.5 * runtime.seconds()) >= power) {
@@ -348,96 +378,95 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
      */
     private double rotate(int degrees, double travelTime) {
 
-        if (opModeIsActive()) ;
-            //Resets the run time once the method has been called on
-            runtime.reset();
-            double minTurnPower = .133;
+        //Resets the run time once the method has been called on
+        runtime.reset();
+        double minTurnPower = .133;
 
-            while (opModeIsActive() && (runtime.seconds() < travelTime)) {
-                // getAngle() returns + when rotating counter clockwise (left) and - when rotating clockwise (right).
-                // rotate until turn is completed.
-                GetTelemetry();
-                if (degrees < 0) {
-                    // On right turn we have to get off zero first.
-                    while (opModeIsActive() && (getAngle() > degrees || getAngle() == 0)) {
-                        //do this as long as our power will be above the amount specified
-                        //sets power as a relationship of the difference between our target angle and current angle
-                        r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+        while (opModeIsActive() && (runtime.seconds() < travelTime)) {
+            // getAngle() returns + when rotating counter clockwise (left) and - when rotating clockwise (right).
+            // rotate until turn is completed.
+            GetTelemetry();
+            if (degrees < 0) {
+                // On right turn we have to get off zero first.
+                while (opModeIsActive() && (getAngle() > degrees || getAngle() == 0)) {
+                    //do this as long as our power will be above the amount specified
+                    //sets power as a relationship of the difference between our target angle and current angle
+                    r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
 
-                        //else, keep it at this power so the robot has enough power to finish its rotation
-                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                            r.m1.setPower(-minTurnPower);
-                            r.m2.setPower(minTurnPower);
-                            r.m3.setPower(-minTurnPower);
-                            r.m4.setPower(minTurnPower);
-                        }
-                    }
-                    while (opModeIsActive() && getAngle() < degrees) {
-                        r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-
-                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                            r.m1.setPower(minTurnPower);
-                            r.m2.setPower(-minTurnPower);
-                            r.m3.setPower(minTurnPower);
-                            r.m4.setPower(-minTurnPower);
-                        }
+                    //else, keep it at this power so the robot has enough power to finish its rotation
+                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                        r.m1.setPower(-minTurnPower);
+                        r.m2.setPower(minTurnPower);
+                        r.m3.setPower(-minTurnPower);
+                        r.m4.setPower(minTurnPower);
                     }
                 }
-                else {   // left turn.
-                    while (opModeIsActive() && getAngle() < degrees) {
-                        r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                while (opModeIsActive() && getAngle() < degrees) {
+                    r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
 
-                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                            r.m1.setPower(minTurnPower);
-                            r.m2.setPower(-minTurnPower);
-                            r.m3.setPower(minTurnPower);
-                            r.m4.setPower(-minTurnPower);
-                        }
-                    }
-                    while (opModeIsActive() && getAngle() > degrees) {
-
-                        r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                        r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-
-                        if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                            r.m1.setPower(-minTurnPower);
-                            r.m2.setPower(minTurnPower);
-                            r.m3.setPower(-minTurnPower);
-                            r.m4.setPower(minTurnPower);
-                        }
+                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                        r.m1.setPower(minTurnPower);
+                        r.m2.setPower(-minTurnPower);
+                        r.m3.setPower(minTurnPower);
+                        r.m4.setPower(-minTurnPower);
                     }
                 }
-
-
-                rotation = getAngle();
-
-                // wait for rotation to stop.
-                sleep(100);
             }
-            // turn the motors off.
-            StopDriving();
-            sleep(250);
-            lastTargetAngle = degrees;
-            return degrees;
+            else {   // left turn.
+                while (opModeIsActive() && getAngle() < degrees) {
+                    r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+
+                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                        r.m1.setPower(minTurnPower);
+                        r.m2.setPower(-minTurnPower);
+                        r.m3.setPower(minTurnPower);
+                        r.m4.setPower(-minTurnPower);
+                    }
+                }
+                while (opModeIsActive() && getAngle() > degrees) {
+
+                    r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+
+                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
+                        r.m1.setPower(-minTurnPower);
+                        r.m2.setPower(minTurnPower);
+                        r.m3.setPower(-minTurnPower);
+                        r.m4.setPower(minTurnPower);
+                    }
+                }
+            }
+
+
+            rotation = getAngle();
+
+            // wait for rotation to stop.
+            sleep(100);
+        }
+        // turn the motors off.
+        StopDriving();
+        sleep(250);
+        lastTargetAngle = degrees;
+        return degrees;
     }
 
-    //This is what happens when the init button is pushed.
-    @Override
-    public void runOpMode() throws InterruptedException {
-        // Initializes hardware when init is pressed on the phone
-        r.init(hardwareMap);
 
+
+
+    @Override
+    public void runOpMode() {
+        //putting all my IMU stuff here, recreating it basically
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         //Makes new methods for naming simplification purposes
@@ -447,10 +476,6 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = true;
-
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
 
         imu.initialize(parameters);
 
@@ -473,15 +498,52 @@ public class Dylans_SmoothSpeedAndIMUAuton extends LinearOpMode
         // The program will wait for the start button to continue.
         waitForStart();
 
-            //last heading (the last direction we rotated to) will update after every turn, but since we haven't turned at start, default to 0 degrees
-            lastTargetAngle=0;
+        //(the last direction we rotated to)
+        lastTargetAngle=0;
 
-            AccelerateForward(1.6);
-            //rotate(-90, 5);
-            AccelerateBackwards(1.6);
-            AccelerateStrafeRight(1.6);
-            AccelerateStrafeLeft(1.6);
+
+
+        r.m1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT); //...ZeroPowerBehavior.FLOAT
+        r.m2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        r.m3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        r.m4.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+        AccelerateStrafeLeft(1.4);
+
+        r.m1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE); //...ZeroPowerBehavior.FLOAT
+        r.m2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        r.m3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        r.m4.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        DriveBackwards(500,0.1);
+
+        //correct for if we bounced
+        StrafeLeft(400,0.1);
+
+        //turn the carousel
+        r.m6.setPower(0.3);
+        sleep(4000);
+
+        AccelerateForward(0.75);
+
+        AccelerateStrafeRight(2.3);
+
+        AccelerateBackwards(0.75);
+
+        rotate(90,2);
+
+        //Park!
+        AccelerateBackwards(0.5);
+        stop();
+
+
+
+
+
+
+
+
+
     }
-
-
 }
+

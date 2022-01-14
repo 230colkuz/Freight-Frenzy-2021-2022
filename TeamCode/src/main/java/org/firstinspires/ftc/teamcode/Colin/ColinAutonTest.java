@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class ColinAutonTest extends LinearOpMode {
 
-    //Calls the RobotHardware class
+    //Calls the RobotHardware class and autonomous instructions
     Hardware_and_Auton r = new Hardware_and_Auton(); //r for robot
 
 

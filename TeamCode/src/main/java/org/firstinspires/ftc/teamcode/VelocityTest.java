@@ -23,11 +23,12 @@ public class VelocityTest extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     double TicksPerSecond;
 
-public void GetTicksPerSecond() {
+public double GetTicksPerSecond() {
     if (getRuntime() > 1) {
         runtime.reset();
+        TicksPerSecond = r.m1.getCurrentPosition();
     }
-    //return TicksPerSecond;
+    return TicksPerSecond;
 }
 
     public void StopDriving()
@@ -63,16 +64,13 @@ public void GetTicksPerSecond() {
         r.s2.setPosition(0.6);
         sleep(1000);*/
 
-        while (opModeIsActive() && getRuntime() < 4000) {
+        while (opModeIsActive()) {
             r.m1.setPower(1);
             r.m2.setPower(1);
             r.m3.setPower(1);
             r.m4.setPower(1);
-        }
-
-        while (opModeIsActive()) {
-            TicksPerSecond = r.m1.getCurrentPosition();
             GetTicksPerSecond();
+            telemetry.addData("position", r.m1.getCurrentPosition());
             telemetry.addData("Velocity", TicksPerSecond);
             telemetry.update();
         }
