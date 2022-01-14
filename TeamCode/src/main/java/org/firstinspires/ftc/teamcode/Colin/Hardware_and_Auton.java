@@ -6,6 +6,9 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -15,78 +18,154 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
 @Autonomous(name="The other one", group="Test")
-public class Autonomous_Instructions extends LinearOpMode {
+public class Hardware_and_Auton extends LinearOpMode {
 
-    ColinRobotHardware r = new ColinRobotHardware();
     private ElapsedTime runtime = new ElapsedTime();
 
     BNO055IMU             imu;
     Orientation           lastAngles = new Orientation();
     double                globalAngle, lastTargetAngle, power = .60, correction, rotation;
 
+    //  INSTANTIATE MOTORS AND SERVOS
+    public DcMotorEx m1;
+    public DcMotorEx m2;
+    public DcMotorEx m3;
+    public DcMotorEx m4;
+    public DcMotorEx m5;
+    public DcMotorEx m6;
+    /*public DcMotor motor7;
+     DcMotor motor8;*/
+    public Servo s1;
+    public Servo s2;
+
+
+    //INSTANTIATE SENSORS
+
+    /*//public GyroSensor gyroSensor;
+    //public ColorSensor colorSensor;
+    public DcMotor LeftEncoder, RightEncoder, BackEncoder;*/
+
+    //CREATE THE HARDWARE MAP
+    HardwareMap hardwareMap;
+
+    public void init(HardwareMap hardwareMap) {
+
+        // DEFINE MOTORS AND SERVOS
+        m1 = hardwareMap.get(DcMotorEx.class, "motor1"); // back right
+        m2 = hardwareMap.get(DcMotorEx.class, "motor2"); // back left
+        m3 = hardwareMap.get(DcMotorEx.class, "motor3"); // front right
+        m4 = hardwareMap.get(DcMotorEx.class, "motor4"); // front left
+        m5 = hardwareMap.get(DcMotorEx.class, "motor5"); // arm motor
+        m6 = hardwareMap.get(DcMotorEx.class, "motor6"); // Carousel motor
+        s1 = hardwareMap.get(Servo.class, "servo1");   // wrist
+        s2 = hardwareMap.get(Servo.class, "servo2");   //claw
+
+        //DEFINE SENSORS
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        //SET MOTOR POWERS
+        m1.setPower(0);
+        m2.setPower(0);
+        m3.setPower(0);
+        m4.setPower(0);
+        m5.setPower(0);
+        m6.setPower(0);
+
+
+        //SET SERVO POSITION
+        s1.setPosition(0);
+        s2.setPosition(0); //0 is claw open, 0.6 is claw closed
+
+        //SET MOTOR zeroPowerBehavior (Brake for the Wheels and Float for anything else
+        m1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE); //...ZeroPowerBehavior.FLOAT
+        m2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        m3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        m4.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        m5.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        m6.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+
+
+        //SET MOTOR DIRECTIONS
+        m1.setDirection(DcMotorEx.Direction.FORWARD); //motor1.setDirection(DcMotor.Direction.REVERSE)
+        m2.setDirection(DcMotorEx.Direction.REVERSE); //motor2.setDirection(DcMotor.Direction.FORWARD)
+        m3.setDirection(DcMotorEx.Direction.FORWARD); //motor3.setDirection(DcMotor.Direction.REVERSE)
+        m4.setDirection(DcMotorEx.Direction.REVERSE); //motor4.setDirection(DcMotor.Direction.FORWARD)
+        m5.setDirection(DcMotorEx.Direction.REVERSE); //motor5.setDirection(DcMotor.Direction.REVERSE)
+        m6.setDirection(DcMotorEx.Direction.FORWARD); //motor6.setDirection(DcMotor.Direction.FORWARD)
+
+
+
+
+        //CALIBRATE SENSORS
+        //gyroSensor.calibrate();
+
+    }
+
     //Basic Methods
     public void StopDriving(){
-        r.m1.setPower(0);
-        r.m2.setPower(0);
-        r.m3.setPower(0);
-        r.m4.setPower(0);
+        m1.setPower(0);
+        m2.setPower(0);
+        m3.setPower(0);
+        m4.setPower(0);
         sleep(250);
     }
     public void DriveForward(long time) {
-        r.m1.setPower(power);
-        r.m2.setPower(power);
-        r.m3.setPower(power);
-        r.m4.setPower(power);
+        m1.setPower(power);
+        m2.setPower(power);
+        m3.setPower(power);
+        m4.setPower(power);
         sleep(time);
         StopDriving();
     }
     public void DriveBackwards(long time) {
-        r.m1.setPower(-power);
-        r.m2.setPower(-power);
-        r.m3.setPower(-power);
-        r.m4.setPower(-power);
+        m1.setPower(-power);
+        m2.setPower(-power);
+        m3.setPower(-power);
+        m4.setPower(-power);
         sleep(time);
         StopDriving();
     }
     public void StrafeRight(long time){
-        r.m1.setPower(power);
-        r.m2.setPower(-power);
-        r.m3.setPower(-power);
-        r.m4.setPower(power);
+        m1.setPower(power);
+        m2.setPower(-power);
+        m3.setPower(-power);
+        m4.setPower(power);
         sleep(time);
         StopDriving();
     }
     public void StrafeLeft(long time){
-        r.m1.setPower(-power);
-        r.m2.setPower(power);
-        r.m3.setPower(power);
-        r.m4.setPower(-power);
+        m1.setPower(-power);
+        m2.setPower(power);
+        m3.setPower(power);
+        m4.setPower(-power);
         sleep(time);
         StopDriving();
     }
     public void TurnRight(double turnPower, long time){
-        r.m1.setPower(turnPower);
-        r.m2.setPower(-turnPower);
-        r.m3.setPower(turnPower);
-        r.m4.setPower(-turnPower);
+        m1.setPower(turnPower);
+        m2.setPower(-turnPower);
+        m3.setPower(turnPower);
+        m4.setPower(-turnPower);
         sleep(time);
         StopDriving();
     }
     public void TurnLeft(double turnPower, long time){
-        r.m1.setPower(-turnPower);
-        r.m2.setPower(turnPower);
-        r.m3.setPower(-turnPower);
-        r.m4.setPower(turnPower);
+        m1.setPower(-turnPower);
+        m2.setPower(turnPower);
+        m3.setPower(-turnPower);
+        m4.setPower(turnPower);
         sleep(time);
         StopDriving();
     }
 
     //Method to print power & runtime to phone
     public void PrintPowerAndRuntime() {
-        telemetry.addData("motor1 Power", r.m1.getPower());
-        telemetry.addData("motor2 Power", r.m2.getPower());
-        telemetry.addData("motor3 Power", r.m3.getPower());
-        telemetry.addData("motor4 Power", r.m4.getPower());
+        telemetry.addData("motor1 Power", m1.getPower());
+        telemetry.addData("motor2 Power", m2.getPower());
+        telemetry.addData("motor3 Power", m3.getPower());
+        telemetry.addData("motor4 Power", m4.getPower());
         telemetry.addData("runtime", getRuntime());
         telemetry.update();
     }
@@ -101,18 +180,18 @@ public class Autonomous_Instructions extends LinearOpMode {
         //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) > 1)) {
 
-            r.m1.setPower(power * (1 * runtime.seconds()));
-            r.m2.setPower(power * (1 * runtime.seconds()));
-            r.m3.setPower(power * (1 * runtime.seconds()));
-            r.m4.setPower(power * (1 * runtime.seconds()));
+            m1.setPower(power * (1 * runtime.seconds()));
+            m2.setPower(power * (1 * runtime.seconds()));
+            m3.setPower(power * (1 * runtime.seconds()));
+            m4.setPower(power * (1 * runtime.seconds()));
 
 
             //Once the power has increased to the regular power, leave the power at that level
             if (Math.abs(power * 1 * runtime.seconds()) >= power) {
-                r.m1.setPower(power);
-                r.m2.setPower(power);
-                r.m3.setPower(power);
-                r.m4.setPower(power);
+                m1.setPower(power);
+                m2.setPower(power);
+                m3.setPower(power);
+                m4.setPower(power);
 
                 PrintPowerAndRuntime();
             }
@@ -121,10 +200,10 @@ public class Autonomous_Instructions extends LinearOpMode {
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) < 1)) {
 
-            r.m1.setPower(power*(travelTime - runtime.seconds()));
-            r.m2.setPower(power*(travelTime - runtime.seconds()));
-            r.m3.setPower(power*(travelTime - runtime.seconds()));
-            r.m4.setPower(power*(travelTime - runtime.seconds()));
+            m1.setPower(power*(travelTime - runtime.seconds()));
+            m2.setPower(power*(travelTime - runtime.seconds()));
+            m3.setPower(power*(travelTime - runtime.seconds()));
+            m4.setPower(power*(travelTime - runtime.seconds()));
 
             PrintPowerAndRuntime();
         }
@@ -132,10 +211,10 @@ public class Autonomous_Instructions extends LinearOpMode {
         //When We're not traveling for a long time, just set the motors to a low power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 2)) {
 
-            r.m1.setPower(0.2);
-            r.m2.setPower(0.2);
-            r.m3.setPower(0.2);
-            r.m4.setPower(0.2);
+            m1.setPower(0.2);
+            m2.setPower(0.2);
+            m3.setPower(0.2);
+            m4.setPower(0.2);
 
             PrintPowerAndRuntime();
 
@@ -154,18 +233,18 @@ public class Autonomous_Instructions extends LinearOpMode {
         //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) > 1)) {
 
-            r.m1.setPower(-power * (1 * runtime.seconds()));
-            r.m2.setPower(-power * (1 * runtime.seconds()));
-            r.m3.setPower(-power * (1 * runtime.seconds()));
-            r.m4.setPower(-power * (1 * runtime.seconds()));
+            m1.setPower(-power * (1 * runtime.seconds()));
+            m2.setPower(-power * (1 * runtime.seconds()));
+            m3.setPower(-power * (1 * runtime.seconds()));
+            m4.setPower(-power * (1 * runtime.seconds()));
 
 
             //Once the power has increased to the regular power, leave the power at that level
             if (Math.abs(power * 1 * runtime.seconds()) >= power) {
-                r.m1.setPower(-power);
-                r.m2.setPower(-power);
-                r.m3.setPower(-power);
-                r.m4.setPower(-power);
+                m1.setPower(-power);
+                m2.setPower(-power);
+                m3.setPower(-power);
+                m4.setPower(-power);
 
                 PrintPowerAndRuntime();
             }
@@ -174,10 +253,10 @@ public class Autonomous_Instructions extends LinearOpMode {
         //DECELERATE
         while (opModeIsActive() && (runtime.seconds()< travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) < 1)) {
 
-            r.m1.setPower(-power*(travelTime - runtime.seconds()));
-            r.m2.setPower(-power*(travelTime - runtime.seconds()));
-            r.m3.setPower(-power*(travelTime - runtime.seconds()));
-            r.m4.setPower(-power*(travelTime - runtime.seconds()));
+            m1.setPower(-power*(travelTime - runtime.seconds()));
+            m2.setPower(-power*(travelTime - runtime.seconds()));
+            m3.setPower(-power*(travelTime - runtime.seconds()));
+            m4.setPower(-power*(travelTime - runtime.seconds()));
 
             PrintPowerAndRuntime();
         }
@@ -185,10 +264,10 @@ public class Autonomous_Instructions extends LinearOpMode {
         //When We're not traveling for a long time, just set the motors to a low power
         while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 2)) {
 
-            r.m1.setPower(-0.2);
-            r.m2.setPower(-0.2);
-            r.m3.setPower(-0.2);
-            r.m4.setPower(-0.2);
+            m1.setPower(-0.2);
+            m2.setPower(-0.2);
+            m3.setPower(-0.2);
+            m4.setPower(-0.2);
 
             PrintPowerAndRuntime();
 
@@ -206,18 +285,18 @@ public class Autonomous_Instructions extends LinearOpMode {
             //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) > 1)) {
 
-                r.m1.setPower(power * (1 * runtime.seconds()));
-                r.m2.setPower(-power * (1 * runtime.seconds()));
-                r.m3.setPower(-power * (1 * runtime.seconds()));
-                r.m4.setPower(power * (1 * runtime.seconds()));
+                m1.setPower(power * (1 * runtime.seconds()));
+                m2.setPower(-power * (1 * runtime.seconds()));
+                m3.setPower(-power * (1 * runtime.seconds()));
+                m4.setPower(power * (1 * runtime.seconds()));
 
 
                 //Once the power has increased to the regular power, leave the power at that level
                 if (Math.abs(power * 1 * runtime.seconds()) >= power) {
-                    r.m1.setPower(power);
-                    r.m2.setPower(-power);
-                    r.m3.setPower(-power);
-                    r.m4.setPower(power);
+                    m1.setPower(power);
+                    m2.setPower(-power);
+                    m3.setPower(-power);
+                    m4.setPower(power);
 
                     PrintPowerAndRuntime();
                 }
@@ -226,10 +305,10 @@ public class Autonomous_Instructions extends LinearOpMode {
             //DECELERATE
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) < 1)) {
 
-                r.m1.setPower(power * (travelTime - runtime.seconds()));
-                r.m2.setPower(-power * (travelTime - runtime.seconds()));
-                r.m3.setPower(-power * (travelTime - runtime.seconds()));
-                r.m4.setPower(power * (travelTime - runtime.seconds()));
+                m1.setPower(power * (travelTime - runtime.seconds()));
+                m2.setPower(-power * (travelTime - runtime.seconds()));
+                m3.setPower(-power * (travelTime - runtime.seconds()));
+                m4.setPower(power * (travelTime - runtime.seconds()));
 
                 PrintPowerAndRuntime();
             }
@@ -237,10 +316,10 @@ public class Autonomous_Instructions extends LinearOpMode {
             //When We're not traveling for a long time, just set the motors to a low power
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 2)) {
 
-                r.m1.setPower(0.4);
-                r.m2.setPower(-0.4);
-                r.m3.setPower(-0.4);
-                r.m4.setPower(0.4);
+                m1.setPower(0.4);
+                m2.setPower(-0.4);
+                m3.setPower(-0.4);
+                m4.setPower(0.4);
 
                 PrintPowerAndRuntime();
 
@@ -258,18 +337,18 @@ public class Autonomous_Instructions extends LinearOpMode {
             //ACCELERATE  When going for more than 2 seconds & accelerate to desired power
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) > 1)) {
 
-                r.m1.setPower(-power * (1 * runtime.seconds()));
-                r.m2.setPower(power * (1 * runtime.seconds()));
-                r.m3.setPower(power * (1 * runtime.seconds()));
-                r.m4.setPower(-power * (1 * runtime.seconds()));
+                m1.setPower(-power * (1 * runtime.seconds()));
+                m2.setPower(power * (1 * runtime.seconds()));
+                m3.setPower(power * (1 * runtime.seconds()));
+                m4.setPower(-power * (1 * runtime.seconds()));
 
 
                 //Once the power has increased to the regular power, leave the power at that level
                 if (Math.abs(power * 1 * runtime.seconds()) >= power) {
-                    r.m1.setPower(-power);
-                    r.m2.setPower(power);
-                    r.m3.setPower(power);
-                    r.m4.setPower(-power);
+                    m1.setPower(-power);
+                    m2.setPower(power);
+                    m3.setPower(power);
+                    m4.setPower(-power);
 
                     PrintPowerAndRuntime();
                 }
@@ -278,10 +357,10 @@ public class Autonomous_Instructions extends LinearOpMode {
             //DECELERATE
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime > 2) && ((travelTime - runtime.seconds()) < 1)) {
 
-                r.m1.setPower(-power * (travelTime - runtime.seconds()));
-                r.m2.setPower(power * (travelTime - runtime.seconds()));
-                r.m3.setPower(power * (travelTime - runtime.seconds()));
-                r.m4.setPower(-power * (travelTime - runtime.seconds()));
+                m1.setPower(-power * (travelTime - runtime.seconds()));
+                m2.setPower(power * (travelTime - runtime.seconds()));
+                m3.setPower(power * (travelTime - runtime.seconds()));
+                m4.setPower(-power * (travelTime - runtime.seconds()));
 
                 PrintPowerAndRuntime();
             }
@@ -289,10 +368,10 @@ public class Autonomous_Instructions extends LinearOpMode {
             //When We're not traveling for a long time, just set the motors to a low power
             while (opModeIsActive() && (runtime.seconds() < travelTime) && (travelTime <= 2)) {
 
-                r.m1.setPower(-0.4);
-                r.m2.setPower(0.4);
-                r.m3.setPower(0.4);
-                r.m4.setPower(-0.4);
+                m1.setPower(-0.4);
+                m2.setPower(0.4);
+                m3.setPower(0.4);
+                m4.setPower(-0.4);
 
                 PrintPowerAndRuntime();
 
@@ -314,7 +393,7 @@ public class Autonomous_Instructions extends LinearOpMode {
         // returned as 0 to +180 or 0 to -180 rolling back to -179 or +179 when rotation passes
         // 180 degrees. We detect this transition and track the total cumulative angle of rotation.
 
-        Orientation angles = r.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         //The change (delta) angle is whatever the angle was first minus our current angle.
         //lastAngles is new Orientation() as declared near the beginning.
@@ -362,7 +441,7 @@ public class Autonomous_Instructions extends LinearOpMode {
 
     public void resetAngle() {
         //ZYX
-        lastAngles = r.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         globalAngle = 0;
     }
 
@@ -392,59 +471,59 @@ public class Autonomous_Instructions extends LinearOpMode {
                 while (opModeIsActive() && (getAngle() > degrees || getAngle() == 0)) {
                     //do this as long as our power will be above the amount specified
                     //sets power as a relationship of the difference between our target angle and current angle
-                    r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
 
                     //else, keep it at this power so the robot has enough power to finish its rotation
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(-minTurnPower);
-                        r.m2.setPower(minTurnPower);
-                        r.m3.setPower(-minTurnPower);
-                        r.m4.setPower(minTurnPower);
+                    if (Math.abs(m1.getPower()) < minTurnPower && Math.abs(m4.getPower()) < minTurnPower) {
+                        m1.setPower(-minTurnPower);
+                        m2.setPower(minTurnPower);
+                        m3.setPower(-minTurnPower);
+                        m4.setPower(minTurnPower);
                     }
                 }
                 while (opModeIsActive() && getAngle() < degrees) {
-                    r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
 
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(minTurnPower);
-                        r.m2.setPower(-minTurnPower);
-                        r.m3.setPower(minTurnPower);
-                        r.m4.setPower(-minTurnPower);
+                    if (Math.abs(m1.getPower()) < minTurnPower && Math.abs(m4.getPower()) < minTurnPower) {
+                        m1.setPower(minTurnPower);
+                        m2.setPower(-minTurnPower);
+                        m3.setPower(minTurnPower);
+                        m4.setPower(-minTurnPower);
                     }
                 }
             }
             else {   // left turn.
                 while (opModeIsActive() && getAngle() < degrees) {
-                    r.m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m1.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m2.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m3.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m4.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
 
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(minTurnPower);
-                        r.m2.setPower(-minTurnPower);
-                        r.m3.setPower(minTurnPower);
-                        r.m4.setPower(-minTurnPower);
+                    if (Math.abs(m1.getPower()) < minTurnPower && Math.abs(m4.getPower()) < minTurnPower) {
+                        m1.setPower(minTurnPower);
+                        m2.setPower(-minTurnPower);
+                        m3.setPower(minTurnPower);
+                        m4.setPower(-minTurnPower);
                     }
                 }
                 while (opModeIsActive() && getAngle() > degrees) {
 
-                    r.m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
-                    r.m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m1.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m2.setPower(Math.abs(0.00555 * (degrees - getAngle())));
+                    m3.setPower(-Math.abs(0.00555 * (degrees - getAngle())));
+                    m4.setPower(Math.abs(0.00555 * (degrees - getAngle())));
 
-                    if (Math.abs(r.m1.getPower()) < minTurnPower && Math.abs(r.m4.getPower()) < minTurnPower) {
-                        r.m1.setPower(-minTurnPower);
-                        r.m2.setPower(minTurnPower);
-                        r.m3.setPower(-minTurnPower);
-                        r.m4.setPower(minTurnPower);
+                    if (Math.abs(m1.getPower()) < minTurnPower && Math.abs(m4.getPower()) < minTurnPower) {
+                        m1.setPower(-minTurnPower);
+                        m2.setPower(minTurnPower);
+                        m3.setPower(-minTurnPower);
+                        m4.setPower(minTurnPower);
                     }
                 }
             }
@@ -466,7 +545,7 @@ public class Autonomous_Instructions extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        r.init(hardwareMap);
+        init(hardwareMap);
 
         //Makes new methods for naming simplification purposes
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -485,7 +564,7 @@ public class Autonomous_Instructions extends LinearOpMode {
 
         //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
         telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", r.imu.getCalibrationStatus().toString());
+        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
         telemetry.update();
 
         waitForStart();

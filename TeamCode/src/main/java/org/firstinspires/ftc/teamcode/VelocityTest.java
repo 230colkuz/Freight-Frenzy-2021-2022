@@ -7,6 +7,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -22,13 +23,20 @@ public class VelocityTest extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     double TicksPerSecond;
 
-/*public double GetTicksPerSecond() {
+public void GetTicksPerSecond() {
     if (getRuntime() > 1) {
         runtime.reset();
-        TicksPerSecond = r.m1.getCurrentPosition();
     }
-    return TicksPerSecond;
-}*/
+    //return TicksPerSecond;
+}
+
+    public void StopDriving()
+    {
+        r.m1.setPower(0);
+        r.m2.setPower(0);
+        r.m3.setPower(0);
+        r.m4.setPower(0);
+    }
 
     //This is what happens when the init button is pushed.
     @Override
@@ -36,24 +44,37 @@ public class VelocityTest extends LinearOpMode {
         r.init(hardwareMap);
         runtime.reset();
 
+        r.m1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m4.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        r.m1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m4.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         waitForStart();
 
-        r.s2.setPosition (.6);
+        /*r.s2.setPosition (.6);
         sleep(2000);
         r.s2.setPosition (0);
         sleep(2000);
         r.s2.setPosition(0.6);
-        sleep(1000);
+        sleep(1000);*/
 
-        /*r.m1.setPower(1);
-        r.m2.setPower(1);
-        r.m3.setPower(1);
-        r.m4.setPower(1);
+        while (opModeIsActive() && getRuntime() < 4000) {
+            r.m1.setPower(1);
+            r.m2.setPower(1);
+            r.m3.setPower(1);
+            r.m4.setPower(1);
+        }
 
-        while (opModeIsActive() && r.m1.isBusy()) {
+        while (opModeIsActive()) {
+            TicksPerSecond = r.m1.getCurrentPosition();
             GetTicksPerSecond();
             telemetry.addData("Velocity", TicksPerSecond);
             telemetry.update();
-        }*/
+        }
     }
 }
