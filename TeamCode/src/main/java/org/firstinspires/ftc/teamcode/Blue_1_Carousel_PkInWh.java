@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Colin.ColinRobotHardware;
 
-@Autonomous(name="Red2(Park_in_warehouse)", group="Test")
+@Autonomous(name="Blue_1_Carousel_PkInWh", group="Test")
 public class Blue_1_Carousel_PkInWh extends LinearOpMode {
 
     //Calls the RobotHardware class
@@ -466,6 +466,8 @@ public class Blue_1_Carousel_PkInWh extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        // Initializes hardware when init is pressed on the phone
+        r.init(hardwareMap);
         //putting all my IMU stuff here, recreating it basically
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
@@ -484,7 +486,7 @@ public class Blue_1_Carousel_PkInWh extends LinearOpMode {
         telemetry.update();
 
         // When the stop button isn't pushed and the gyro (IMU) isn't calibrated, wait (! means not). This is a loop.
-        while (!isStopRequested() && !r.imu.isGyroCalibrated()) {
+        while (!isStopRequested() && !imu.isGyroCalibrated()) {
             //do nothing for 50 milliseconds
             sleep(50);
             //idle(); allows the program to perform other necessary tasks in between iterations of the loop.
@@ -492,7 +494,7 @@ public class Blue_1_Carousel_PkInWh extends LinearOpMode {
         }
         //Once the past loop finishes and the IMU is calibrated, the rest of the code continues.
         telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", r.imu.getCalibrationStatus().toString());
+        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
         telemetry.update();
 
         // The program will wait for the start button to continue.

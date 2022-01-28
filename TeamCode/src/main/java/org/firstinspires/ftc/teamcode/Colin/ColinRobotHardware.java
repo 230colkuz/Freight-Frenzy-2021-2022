@@ -37,11 +37,11 @@ public class ColinRobotHardware {
     public void init(HardwareMap hardwareMap) {
 
         // DEFINE MOTORS AND SERVOS
-        m1 = hardwareMap.get(DcMotorEx.class, "motor1"); // back right
-        m2 = hardwareMap.get(DcMotorEx.class, "motor2"); // back left
-        m3 = hardwareMap.get(DcMotorEx.class, "motor3"); // front right
-        m4 = hardwareMap.get(DcMotorEx.class, "motor4"); // front left
-        m5 = hardwareMap.get(DcMotorEx.class, "motor5"); // arm motor
+        m1 = hardwareMap.get(DcMotorEx.class, "m1"); // back right
+        m2 = hardwareMap.get(DcMotorEx.class, "m2"); // back left
+        m3 = hardwareMap.get(DcMotorEx.class, "m3"); // front right
+        m4 = hardwareMap.get(DcMotorEx.class, "m4"); // front left
+        m5 = hardwareMap.get(DcMotorEx.class, "m5"); // arm motor
         m6 = hardwareMap.get(DcMotorEx.class, "motor6"); // Carousel motor
         s1 = hardwareMap.get(Servo.class, "servo1");   // wrist
         s2 = hardwareMap.get(Servo.class, "servo2");   //claw

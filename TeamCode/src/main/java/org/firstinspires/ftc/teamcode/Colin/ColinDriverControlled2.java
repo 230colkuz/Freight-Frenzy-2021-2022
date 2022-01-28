@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name = "ColinDriverControlled", group = "Test")
-public class ColinDriverControlled extends OpMode {
+@TeleOp(name = "DriverControlledEncoder", group = "Test")
+public class ColinDriverControlled2 extends OpMode {
 
     // DEFINE robot
     ColinRobotHardware r = new ColinRobotHardware();
@@ -46,6 +46,15 @@ public class ColinDriverControlled extends OpMode {
     //RUN ONCE ON start()
     @Override
     public void start() {
+        r.m1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        r.m4.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        r.m1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        r.m4.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         r.m1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //...ZeroPowerBehavior.FLOAT
         r.m2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -115,11 +124,11 @@ public class ColinDriverControlled extends OpMode {
         //Plug servos into the expansion hub
         //Claw Wrist
         if (G1leftBumper) {
-            r.s1.setPosition(0.0);
+            r.s1.setPosition(0.3);
         }
 
         if (G1LT>0) {
-            r.s1.setPosition(1.0);
+            r.s1.setPosition(0.7);
         }
 
         //Claw pincher
@@ -154,3 +163,4 @@ public class ColinDriverControlled extends OpMode {
         return multiplier;
     }
 }
+
